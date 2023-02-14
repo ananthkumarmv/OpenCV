@@ -31,8 +31,10 @@ cv.waitKey(0)
 ########################## Read Web Cam #########################
 
 cap = cv.VideoCapture(0)
-cap.set(3, 640)
-cap.set(4, 480)
+frameWidth = 640
+frameHeight = 480
+cap.set(3, frameWidth)
+cap.set(4, frameHeight)
 cap.set(10, 100)
 
 while True:

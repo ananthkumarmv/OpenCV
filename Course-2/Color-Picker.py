@@ -1,9 +1,6 @@
 import cv2 as cv
 import numpy as np
 
-path = 'Resources/lambo.png'
-img = cv.imread(path)
-# cv.imshow('Original', img)
 
 
 def stackImages(scale,imgArray):
@@ -39,25 +36,41 @@ def stackImages(scale,imgArray):
 
 
 
-
 def empty(a):
     pass
 
 cv.namedWindow('TrackBars')
 cv.resizeWindow('TrackBars', 640, 240)
 cv.createTrackbar('Hue Minimum', 'TrackBars', 0, 179, empty)
-cv.createTrackbar('Hue Maximum', 'TrackBars', 19, 179, empty)
-cv.createTrackbar('Saturatioon Minimum', 'TrackBars', 111, 255, empty)
-cv.createTrackbar('Saturatioon Maximum', 'TrackBars', 240, 255, empty)
-cv.createTrackbar('Value Minimum', 'TrackBars', 153, 255, empty)
-cv.createTrackbar('Value Maximum', 'TrackBars', 255, 255, empty)
+cv.createTrackbar('Hue Maximum', 'TrackBars', 0, 179, empty)
+cv.createTrackbar('Saturatioon Minimum', 'TrackBars', 0, 255, empty)
+cv.createTrackbar('Saturatioon Maximum', 'TrackBars', 0, 255, empty)
+cv.createTrackbar('Value Minimum', 'TrackBars', 0, 255, empty)
+cv.createTrackbar('Value Maximum', 'TrackBars', 0, 255, empty)
 
 
-imgHSV = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-# cv.imshow('HSV', imgHSV)
+cap = cv.VideoCapture(1)
+frameWidth = 640
+frameHeight = 480
+cap.set(3, frameWidth)
+cap.set(4, frameHeight)
+cap.set(10, 150)
+
+# path = 'Resources/lambo.png'
+# img = cv.imread(path)
+
+
+# hsvImg = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+# # cv.imshow('HSV', hsvImg)
+
 
 while True:
 
+    success, img = cap.read()
+
+    hsvImg = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+
+    
     h_min = cv.getTrackbarPos('Hue Minimum', "TrackBars")
     h_max = cv.getTrackbarPos('Hue Maximum', "TrackBars")
     s_min = cv.getTrackbarPos('Saturatioon Minimum', "TrackBars")
@@ -71,15 +84,17 @@ while True:
     lower = np.array([h_min, s_min, v_min])
     upper = np.array([h_max, s_max, v_max])
 
-    mask = cv.inRange(imgHSV, lower, upper)
+    mask = cv.inRange(hsvImg, lower, upper)
 
     imgResult = cv.bitwise_and(img, img, mask=mask)
 
-    imgStack = stackImages(0.6, ([img, imgHSV], [mask, imgResult]))
+    imgStack = stackImages(0.6, ([img, mask, imgResult]))
 
     cv.imshow('Stacked Images', imgStack)
 
-    cv.waitKey(1)
+    if cv.waitKey(1) & 0xFF == ord('q'):
+        break
 
 
 cv.waitKey(0)
+
