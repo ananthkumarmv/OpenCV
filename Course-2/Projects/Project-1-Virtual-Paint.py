@@ -51,7 +51,7 @@ def getContours(img):
 
             x, y, w, h = cv.boundingRect(approx)
 
-    return x+w//2, y+h//2
+    return x+w//2, y
 
 
 
@@ -60,17 +60,22 @@ def getContours(img):
 myColors = [[168, 179, 130, 240, 150, 225],
             [26, 78, 93, 237, 60, 255]]
 
-colors = [[106, 51, 170],
-          [0, 255, 255]]
+colors = [[106, 51, 170], # Pink
+          [0, 255, 255]]  # Yellow
 
 myPoints = []  # [x_, y_, colorId]
 
+
+def drawOnCanvas(myPoints, colors):
+    for point in myPoints:
+        cv.circle(imgResult, (point[0], point[1]), 10, colors[point[2]], cv.FILLED)
 
 
 def findColor(img, myColors, colors):
 
     imgHSV = cv.cvtColor(img, cv.COLOR_BGR2HSV)
     count = 0
+    newPoints = []
     for i in range(len(myColors)):
         lower = np.array((myColors[i][0], myColors[i][2], myColors[i][4]))
         upper = np.array((myColors[i][1], myColors[i][3], myColors[i][5]))
@@ -79,12 +84,16 @@ def findColor(img, myColors, colors):
 
         x, y = getContours(mask)
         cv.circle(imgResult, (x, y), 10, colors[count], -1)
-        count += 1
 
+        if x != 0 and y!=0:
+            newPoints.append([x, y, count])
+        count += 1
+    
+    return newPoints
 
 
 # Web cam
-cap = cv.VideoCapture(1)
+cap = cv.VideoCapture(0)
 frameWidth = 640
 frameHeight = 480
 cap.set(3, frameWidth)
@@ -97,7 +106,14 @@ while True:
 
     imgResult = img.copy()
 
-    findColor(img, myColors, colors)
+    newPoints = findColor(img, myColors, colors)
+
+    if len(newPoints) != 0:
+        for newP in newPoints:
+            myPoints.append(newP)
+
+    if len(myPoints) != 0:
+        drawOnCanvas(myPoints, colors)
 
     cv.imshow('Result', imgResult)
 
